@@ -1,9 +1,7 @@
 <template>
   <div>
-    <div v-if="typeof bulb != 'undefined'" class="bulb" :class="{ on: bulb }">
-      {{ value }}
-    </div>
-    <div v-if="main | second" class="diagonal" :class="main ? 'main' : 'second'"> </div>
+    <div v-if="typeof bulb != 'undefined'" class="bulb" :class="{ on: bulb }"> {{ value }} </div>
+    <div v-if="diagonal.main || diagonal.second" class="diagonal" :class="diagonal.main ? 'main' : 'second'" />
   </div>
 </template>
 
@@ -14,7 +12,7 @@ export default {
     value: { type: Number },
     bulb: { type: [Boolean, Number] },
     main: { type: Boolean, default: false },
-    second: { type: Boolean, default: false }
+    diagonal: { type: Object, default: { main: false, second: false } }
   },
   data: () => ({}),
   computed: {},

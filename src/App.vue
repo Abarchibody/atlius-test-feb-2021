@@ -1,11 +1,15 @@
 <template>
-  <router-view :key="$route.fullPath" />
+  <app-table></app-table>
 </template>
 
 <script>
+import appTable from "./components/table";
+
 export default {
   name: "App",
-
+  components: {
+    appTable
+  },
   data: () => ({}),
   computed: {},
   mounted() {},

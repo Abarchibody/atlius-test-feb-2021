@@ -4,7 +4,7 @@
       <div class="inputs">
         <div>
           <div class="title">N</div>
-          <input v-model="n" />
+          <input v-model="n" readonly />
         </div>
         <div>
           <div class="title">T</div>
@@ -25,7 +25,7 @@
     </div>
     <br />
     <div class="screen">
-      <div>{{ deg }}<sup>o</sup> </div>
+      <div>{{ deg / 90 }}</div>
     </div>
     <br />
     <br />
@@ -45,10 +45,10 @@
           <app-cell
             v-for="(m, j) in matrix[i]"
             :key="j"
-            :value="m"
+            :value="Math.abs(m - cells.length) + 1"
             :bulb="bulbs[m]"
-            :main="diagonals.main.includes(m)"
-            :second="diagonals.second.includes(m)"
+            :main="main"
+            :diagonal="{ main: diagonals.main.includes(m), second: diagonals.second.includes(m) }"
             class="col"
             :style="`width: calc(100% / ${n}; height: 100%;transform: rotateZ(${deg}deg);`"
           >
@@ -69,7 +69,7 @@ export default {
     appCell
   },
   data: () => ({
-    n: 7,
+    n: 5,
     t: 500,
     bulbs: [],
     size: 50,
@@ -80,7 +80,8 @@ export default {
     diagonals: {
       main: [],
       second: []
-    }
+    },
+    main: true
   }),
   computed: {},
   mounted() {
@@ -90,14 +91,39 @@ export default {
     onOn: async function() {
       for (let i = this.cells.length + 1; i >= 1; i--) {
         if (!this.bulbs[i]) this.bulbs[i] = await this.onBulb(1);
-        if (this.diagonals.main.includes(i)) this.deg += 90;
+
+        if (i !== this.cells.length) {
+          if (this.diagonals.main.includes(i)) {
+            if (this.main) {
+              this.deg += 90;
+              this.main = false;
+            }
+          } else if (this.diagonals.second.includes(i)) {
+            if (!this.main) {
+              this.deg += 90;
+              this.main = true;
+            }
+          }
+        }
       }
       this.isOn = true;
     },
     onOff: async function() {
       for (let i = 1; i <= this.cells.length; i++) {
         if (this.bulbs[i]) this.bulbs[i] = await this.onBulb(0);
-        if (this.diagonals.second.includes(i)) this.deg -= 90;
+        if (i !== this.cells.length) {
+          if (this.diagonals.main.includes(i)) {
+            if (!this.main) {
+              this.deg -= 90;
+              this.main = true;
+            }
+          } else if (this.diagonals.second.includes(i)) {
+            if (this.main) {
+              this.deg -= 90;
+              this.main = false;
+            }
+          }
+        }
       }
       this.isOn = false;
     },
@@ -276,7 +302,7 @@ export default {
     display: flex;
     flex-wrap: wrap;
     border: solid 2px #555;
-    transition: transform 0.1s;
+    transition: transform 0.5s;
     margin: 0 auto;
 
     .row {
@@ -311,6 +337,7 @@ export default {
           display: flex;
           justify-content: center;
           align-items: center;
+          transition: 1s;
           &.on {
             background-color: red;
             color: white;
@@ -324,7 +351,9 @@ export default {
           width: 4px;
           height: 4px;
           border-radius: 2px;
-          background: green;
+          &.main {
+            background: green;
+          }
           &.second {
             background-color: orange;
           }
